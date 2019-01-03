@@ -10,19 +10,25 @@ function puzzleOneMain() {
   // variable to hold our result
   var firstToTwo = null;
 
-  // Get the HTML element from the dom*/
+  // Get the HTML element from the dom
   var rawInput = document.getElementsByTagName("pre");
 
-  // Its first element's HTML gives you the input as a stacked string*/
+  // Its first element's HTML gives you the input as a stacked string
   var textInput = rawInput && rawInput[0] && rawInput[0].innerHTML;
 
-  if (!textInput) {
+  if (!textInput || (textInput && textInput.length == 0)) {
     console.warn("no input found");
+    return;
   }
 
   // Replace new lines with commas
   var arrayInput = textInput.split("\n");
 
+  if (!arrayInput || (arrayInput && arrayInput.length == 0)) {
+    console.warn("could not construct array for input");
+    return;
+  }
+  
   // Each array item is a string, convert to int to perform add/sub on
   arrayInput.forEach((item, index) => {
     arrayInput[index] = parseInt(item);
