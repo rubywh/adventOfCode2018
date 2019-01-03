@@ -1,0 +1,62 @@
+/**** Advent of Code Puzzle 1 : https://adventofcode.com/2018/day/1 ****/
+
+// The total so far in the sequence of the summed frequencies
+var totalSoFar = 0;
+
+// An object to keep a tally against the total after each stpe in sequence
+var freqCounter = {};
+
+function puzzleOneMain() {
+  // variable to hold our result
+  var firstToTwo = null;
+
+  // Get the HTML element from the dom*/
+  var rawInput = document.getElementsByTagName("pre");
+
+  // Its first element's HTML gives you the input as a stacked string*/
+  var textInput = rawInput && rawInput[0] && rawInput[0].innerHTML;
+
+  if (!textInput) {
+    console.warn("no input found");
+  }
+
+  // Replace new lines with commas
+  var arrayInput = textInput.split("\n");
+
+  // Each array item is a string, convert to int to perform add/sub on
+  arrayInput.forEach((item, index) => {
+    arrayInput[index] = parseInt(item);
+  });
+
+  // While we still don't have a result
+  while (!firstToTwo) {
+    // Loop through the array again, carrying over the total
+    firstToTwo = loopThroughArray(arrayInput);
+  }
+
+  return firstToTwo;
+}
+
+function loopThroughArray(input) {
+  for (i = 0; i < input.length - 1; i++) {
+    // If for some reason there is no input at that position, break out of the loop
+    if (!input[i]) {
+      break;
+    }
+
+    totalSoFar += input[i];
+
+    // If incrementing tally for this total
+    if ((freqCounter[totalSoFar] && freqCounter[totalSoFar]) + 1 === 2) {
+      // first item twice has been found
+      return totalSoFar;
+    } else {
+      // Update the results object with a 1 tally
+      freqCounter[totalSoFar] = (freqCounter[totalSoFar] || 0) + 1;
+    }
+  }
+  // signify no result found yet
+  return null;
+}
+
+alert(puzzleOneMain());
