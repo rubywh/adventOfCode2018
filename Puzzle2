@@ -1,0 +1,59 @@
+/*** Advent of Code 2018 puzzle 2 : https://adventofcode.com/2018/day/2 ***/
+
+function puzzleTwoMain() {
+  // Get the HTML element from the dom*/
+  var rawInput = document.getElementsByTagName("pre");
+
+  // Its first element's HTML gives you the input as a stacked string*/
+  var textInput = rawInput && rawInput[0] && rawInput[0].innerHTML;
+
+  if (!textInput) {
+    console.warn("no input found");
+    return;
+  }
+
+  // Replace new lines with commas
+  var arrayInput = textInput.split("\n");
+
+  if (!arrayInput || (arrayInput && arrayInput.length == 0)) {
+    console.warn("no array of input to process");
+    return;
+  }
+  return loopThroughArray(arrayInput);
+}
+
+/**
+ * Loop through each string and all of the characters in each string
+ * and store a tally of how many repeats of that letter there are.
+ * Then, check in each case there are any tallys of 2 or 3, sum the totals
+ * and multiply them together to achieve the checksum.
+ **/
+function loopThroughArray(input) {
+  // Running total of words with repeats of length 2
+  let repeatTwo = 0,
+    // Running total of words with repeats of length 3
+    repeatThree = 0;
+
+  input.forEach(boxID => {
+    let tally = {};
+    // Store occurrences of each character in the string
+    for (var i = 0; i < boxID.length; i++) {
+      let char = boxID.charAt(i);
+      tally[char] = (tally[char] || 0) + 1;
+    }
+
+    // If the tally for any char is 2, increment count of repeated
+    if (Object.keys(tally).some(item => tally[item] == 2)) {
+      repeatTwo++;
+    }
+    // If the tally for any char is 3, increment count of triples
+    if (Object.keys(tally).some(item => tally[item] == 3)) {
+      repeatThree++;
+    }
+  });
+
+  // multiply the final result to give the checksum
+  return repeatTwo * repeatThree;
+}
+
+alert(puzzleTwoMain());
