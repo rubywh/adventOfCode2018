@@ -1,0 +1,81 @@
+/** Advent of Code Day 3 https://adventofcode.com/2018/day/3 **/
+function puzzleThreeMain() {
+  // Get the HTML element from the dom*/
+  var rawInput = document.getElementsByTagName("pre");
+
+  // Its first element's HTML gives you the input as a stacked string*/
+  var textInput = rawInput && rawInput[0] && rawInput[0].innerHTML.trim();
+
+  if (!textInput) {
+    console.warn("no input found");
+  }
+
+  // Replace new lines with commas
+  var arrayInput = textInput.split("\n");
+
+  arrayInput.forEach((item, index) => {
+    // Remove : or # symbols, and split into array
+    arrayInput[index] = item
+      .replace(/#|:/g, "")
+      .split(/[ ,]+|x/)
+      .filter(entry => {
+        // Remove the redundant @ entry
+        return entry !== "@";
+      })
+      .map(str => {
+        return parseInt(str);
+      });
+  });
+
+  next(arrayInput);
+}
+
+function next(input) {
+  let ov = 0;
+  let overlap = 0;
+  let tally = {};
+
+  input.forEach((pattern, i) => {
+    // The minimum x coordinate of pattern i
+    let iXMin = input[i][1],
+      // The maximum x coordinate of pattern i
+      iXMax = iXMin + input[i][3] - 1,
+      // The minimum y coordinate of pattern i
+      iYMin = input[i][2],
+      // The maximum y coordinate of pattern i
+      iYMax = iYMin + input[i][4] - 1;
+
+    for (let j = i + 1; j <= input.length - 1; j++) {
+      // the minimum x coordinate of pattern j
+      let jXMin = input[j][1],
+        //  The maximum x coordinate of pattern j
+        jXMax = jXMin + input[j][3] - 1,
+        // The minimum y coordinate of pattern j
+        jYMin = input[j][2],
+        // The maximum y coordinate of pattern j
+        jYMax = jYMin + input[j][4] - 1;
+
+      // for each x, y coordinate in pattern i
+      for (let m = iXMin; m <= iXMax; m++) {
+        for (let n = iYMin; n <= iYMax; n++) {
+          // Check if it is contained within pattern j
+          if (m >= jXMin && m <= jXMax && (n >= jYMin && n <= jYMax)) {
+            // If there is already a tally for this coordinate, skip
+            if (tally[m] && tally[m][n] == 1) {
+              continue;
+            } else if (tally[m] == undefined) {
+              // nothing stored for this x coord yet
+              tally[m] = {};
+            }
+            // found a new overlapping coordinate
+            overlap++;
+            tally[m][n] = 1;
+          }
+        }
+      }
+    }
+  });
+  alert(overlap);
+}
+
+puzzleThreeMain();
