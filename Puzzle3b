@@ -1,0 +1,122 @@
+/***** Advent of Code Day 3 part 2: https://adventofcode.com/2018/day/3 *****/
+
+function puzzleThreeMain() {
+  // Get the HTML element from the dom*/
+  var rawInput = document.getElementsByTagName("pre");
+
+  // Its first element's HTML gives you the input as a stacked string*/
+  var textInput = rawInput && rawInput[0] && rawInput[0].innerHTML.trim();
+
+  if (!textInput) {
+    console.warn("no input found");
+  }
+
+  // Replace new lines with commas
+  var arrayInput = textInput.split("\n");
+
+  arrayInput.forEach((item, index) => {
+    // Remove : or # symbols, and split into array
+    arrayInput[index] = item
+      .replace(/#|:/g, "")
+      .split(/[ ,]+|x/)
+      .filter(entry => {
+        // Remove the redundant @ entry
+        return entry !== "@";
+      })
+      .map(str => {
+        return parseInt(str);
+      });
+  });
+
+  return next(arrayInput);
+}
+
+function next(input) {
+  // Object to store {patternID: flag}
+  // where flag tracks if it has any overlap with another pattern
+  let tally = {};
+
+  // For each pattern
+  for (let i = 0; i <= input.length - 1; i++) {
+    // The minimum x coordinate of pattern i
+    let iXMin = input[i][1],
+      // The maximum x coordinate of pattern i
+      iXMax = iXMin + input[i][3] - 1,
+      // The minimum y coordinate of pattern i
+      iYMin = input[i][2],
+      // The maximum y coordinate of pattern i
+      iYMax = iYMin + input[i][4] - 1,
+      // get the id for pattern i
+      patternI = input[i][0];
+
+    for (let j = i + 1; j <= input.length - 1; j++) {
+      // the minimum x coordinate of pattern j
+      let jXMin = input[j][1],
+        //  The maximum x coordinate of pattern j
+        jXMax = jXMin + input[j][3] - 1,
+        // The minimum y coordinate of pattern j
+        jYMin = input[j][2],
+        // The maximum y coordinate of pattern j
+        jYMax = jYMin + input[j][4] - 1,
+        // get the id for pattern j
+        patternJ = input[j][0];
+
+      if (tally[patternI] == true && tally[patternJ] == true) {
+        // We know pattern i and j overlap with other pattern, so move on
+        continue;
+      }
+
+      // for each x coordinate in pattern i
+      for (let m = iXMin; m <= iXMax; m++) {
+        // Break out of the loop if we know pattern i and j overlap
+        if (tally[patternI] == true && tally[patternJ] == true) {
+          break;
+        }
+        // for each y coordinate in pattern i
+        for (let n = iYMin; n <= iYMax; n++) {
+          // Break out of the loop if we know pattern i and j overlap
+          if (tally[patternI] == true && tally[patternJ] == true) {
+            break;
+          }
+          // Check if it is contained within pattern j
+          if (m >= jXMin && m <= jXMax && (n >= jYMin && n <= jYMax)) {
+            // there is overlap for both of these patterns
+            tally[patternI] = true;
+            tally[patternJ] = true;
+            // found an overlap so move to next pattern comparison
+            break;
+          }
+        }
+      }
+
+      // If pattern j pattern isn't already marked as overlapping
+      if (tally[patternJ] !== true) {
+        // mark it as candidate for no overlaps
+        tally[patternJ] = false;
+      }
+    }
+    // If pattern i isn't already marked as overlapping
+    if (tally[patternI] !== true) {
+      // mark it as candidate for no overlaps
+      tally[patternI] = false;
+    }
+  }
+  return findNonOverlapPattern(tally);
+}
+
+/**
+ * Take object containing pattern ids and boolean
+ * flag as to whether it has overlap
+ */
+function findNonOverlapPattern(patternIDsObj) {
+  let keys = Object.keys(patternIDsObj),
+    answer = "";
+
+  for (let p = 1; p <= keys.length; p++) {
+    if (patternIDsObj[p] == false) {
+      return p.toString();
+    }
+  }
+}
+
+alert(puzzleThreeMain());
