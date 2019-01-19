@@ -1,0 +1,142 @@
+/***** Advent of Code 2018 day 4 part 2:  https://adventofcode.com/2018/day/4/answer *****/
+
+function puzzleFourMain() {
+  // Get the HTML element from the dom*/
+  var rawInput = document.getElementsByTagName("pre");
+
+  // Its first element's HTML gives you the input as a stacked string*/
+  var textInput = rawInput && rawInput[0] && rawInput[0].innerHTML.trim();
+
+  if (!textInput) {
+    console.warn("no input found");
+  }
+
+  // Replace new lines with commas
+  var arrayInput = textInput.split("\n");
+
+  let conciseInput = [];
+  let guardID;
+
+  arrayInput.forEach((item, index) => {
+    // Remove the redundant information, we only care about "falls" and "wakes" and "guard" to categorise the log entry
+    let distilledInput = item.replace(/asleep|shift|begins|up/g, "");
+
+    // Introduce coded log - falls asleep = 0 wakes = 1, begins shift = 2, and split into [datetime][other info]
+    distilledInput = distilledInput
+      .replace("falls", 0)
+      .replace("wakes", 1)
+      .replace("Guard", 2)
+      .split(/[[\]]+|x/);
+
+    // Get the timestamp from the split input and convert to javascript Date.
+    let dateTime = new Date(distilledInput[1]);
+
+    // Get other information in the distilled array, trim the whitespace and split into array
+    let actionAndGuardID = distilledInput[2]
+      .replace("#", "")
+      .trim()
+      .split(/[ ,]+|x/);
+
+    // Get the action code (i.e. 0 for fall asleep)
+    let action = actionAndGuardID[0];
+
+    // If there is a guard ID, store it, else we know this log entry has "" as guard ID
+    // GuardID per log entry will be handled later
+    actionAndGuardID[1] ? (guardID = actionAndGuardID[1]) : (guardID = "");
+
+    // Store the information we need
+    conciseInput.push({ dateTime: dateTime, action: action, guardID: guardID });
+  });
+
+  // Now sort the input by the Date
+  conciseInput = conciseInput.sort(function(a, b) {
+    if (a.dateTime > b.dateTime) {
+      return 1;
+    } else {
+      return -1;
+    }
+  });
+
+  // Add in the correct guard number to those that currently store ""
+  conciseInput.forEach((item, index) => {
+    let guardNo = 0;
+    // If there is no guard number for this entry
+    if (item.guardID == "") {
+      // Look at the previous entry and take that one's guard number
+      if (conciseInput[index - 1] !== undefined) {
+        item.guardID = conciseInput[index - 1].guardID;
+      }
+    }
+  });
+
+  // Get the guard most asleep and perform calc
+  let guardMostAsleep = getGuardMostAsleep(conciseInput);
+
+  return calculateResult(guardMostAsleep);
+}
+
+/**
+ * Store Guard ID against minutes asleep
+ */
+function getGuardMostAsleep(input) {
+  let maxMinsAsleep = {},
+    result = { guardID: null, minute: 0, total: 0 };
+
+  for (let i = 0; i < input.length - 1; i++) {
+    let guardID = input[i].guardID,
+      startSleep = input[i].dateTime,
+      endSleep = input[i + 1].dateTime;
+
+    // If the guard is falling asleep
+    if (input[i].action == "0") {
+      // Find the time between falling asleep and waking up
+      let minsAsleep = Math.floor((endSleep - startSleep) / 1000 / 60);
+      // The first minute the guard is asleep
+      minFallAsleep = startSleep.getMinutes();
+      // The final minute the guard is asleep
+      finalMinAsleep = startSleep.getMinutes() + minsAsleep - 1;
+
+      // For each minute asleep
+      for (let j = minFallAsleep; j <= finalMinAsleep; j++) {
+        // If no tally for this minute agaist this guard ID
+        if (maxMinsAsleep[guardID] == undefined) {
+          // define empty object
+          maxMinsAsleep[guardID] = {};
+        }
+
+        // Increment tally against this guard ID and this minute
+        maxMinsAsleep[guardID][j] = (maxMinsAsleep[guardID][j] || 0) + 1;
+      }
+    }
+  }
+
+  Object.keys(maxMinsAsleep).forEach(entry => {
+    // for each guard's log
+    Object.keys(maxMinsAsleep[entry]).forEach(it => {
+      // If total mins asleep at this minute is greater than that so far
+      if (maxMinsAsleep[entry][it] > minAsleepMostOften.total) {
+        // Record the minute at which most asleep
+        result.minute = it;
+        // Record total mins asleep for this minute
+        result.total = maxMinsAsleep[entry][it];
+        // Record the guard ID
+        result.guardID = entry;
+      }
+    });
+  });
+  // Return object with guard id, mins asleep and total mins asleep.
+  return minAsleepMostOften;
+}
+
+/**
+ * Calculate Guard ID of guard most asleep * num mins asleep for
+ */
+function calculateResult(resultObj) {
+  if (!resultObj) {
+    console.warn("no result for calculation");
+    return 0;
+  }
+
+  return resultObj.guardID * resultObj.minute;
+}
+alert(puzzleFourMain());
